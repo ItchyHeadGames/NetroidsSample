@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.InteropServices;
 using Ihg;
 using Ihg.Netroids.Runtime.GameBase;
 using Ihg.Netroids.Runtime.GamePlay.GameNetworking.Simulation;
@@ -13,100 +10,6 @@ using Physics = UnityEngine.Physics;
 
 namespace Ihg.Netroids.Runtime.NetGame.Runtime
 {
-    public interface IPlayerInputState
-    {
-        
-    }
-    
-    public interface IGameStateRecord
-    {
-        int frame { get; set; }
-
-        void Read(int elementIndex, FastBufferReader reader);
-
-        void Finalize(int elementIndex);
-
-        bool IsFinal(int elementIndex);
-
-        public IGameStateElement GetGameStateElement(short elementIndex);
-
-        public void SetPlayerInputState(InputState playerInputState, int playerIndex);
-
-        int GetElementCount();
-        
-        void SerializeTo(Stream stream);
-
-        public void UpdateState(int index, IGameStateElement gameStateElement);
-    }
-
-    public static class ManagedArrayExtensions
-    {
-        public static bool EqualTo<T>(this T[] array, MemoryStream stream) where T : unmanaged
-        {
-            // Convert the array to a Span<byte>
-            Span<byte> arraySpan = MemoryMarshal.Cast<T, byte>(array);
-
-            // Get the underlying buffer of the MemoryStream
-            // NOTE: Use TryGetBuffer for more robust error handling.
-            if (!stream.TryGetBuffer(out ArraySegment<byte> segment))
-            {
-                // Handle the case where the buffer is not accessible
-                return false;
-            }
-
-            // Create a span from the MemoryStream's buffer segment
-            Span<byte> streamSpan = segment.AsSpan(0, (int)stream.Length);
-
-            // Check if the lengths are the same
-            if (streamSpan.Length != arraySpan.Length)
-            {
-                return false;
-            }
-
-            // Compare the contents of the stream's buffer and the array
-            return streamSpan.SequenceEqual(arraySpan);
-        }
-    }
-
-    public interface IGameSettings
-    {
-    }
-
-    public interface IGameSimulation
-    {
-        public float GetDeltaTime();
-
-        public float DeltaTimeMs => GetDeltaTime() * 1000f;
-
-        void Initialize(float fixedDeltaTime, string name, IGameSettings gameSettings);
-
-        void Shutdown();
-
-        void Simulate(IGameStateRecord fromState, IGameStateRecord tempState);
-
-        public GameState NewRecord();
-
-        public void SetDefaultState(IGameStateRecord gameState);
-
-        public void CopyNonFinal(IGameStateRecord from, IGameStateRecord to);
-        void ActivatePlayer(IGameStateRecord iGameState, int playerIndex, string playerName, bool isHuman, byte skillLevel);
-        void DeactivatePlayer(IGameStateRecord iGameState, int playerIndex);
-
-        IEnumerable<Rigidbody> GetAllSimulatedBodies();
-
-        int GetMaxPlayers();
-
-        public IGameStateElement GetPlayerInputElement(IGameStateRecord gameState, int playerIndex, out int playerInputStateIndex);
-
-        Type GetElementType(IGameStateRecord gameStateRecord, int elementIndex);
-        
-        int GetRecordSize();
-
-        //IPlayerInputState GetDefaultPlayerInputState();
-
-        bool IsPlayerInputState(int gameStateElementIndex);
-    }
-
     public class GameSimulationRunner
     {
         private GameStateBuffer m_StateBuffer;
